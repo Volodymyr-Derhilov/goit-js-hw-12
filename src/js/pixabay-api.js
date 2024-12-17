@@ -15,6 +15,5 @@ export default async function searchPhotos(search = '', page) {
       page,
     },
   });
-  console.log(response.data);
   return response.data;
 }

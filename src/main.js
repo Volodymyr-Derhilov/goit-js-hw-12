@@ -21,21 +21,26 @@ loadBtn.addEventListener('click', handleLoad);
 async function handleSubmit(event) {
   loadBtn.classList.remove('visible');
   event.preventDefault();
-  page = 1;
-  search = event.target.elements.search.value;
+
+  search = event.target.elements.search.value.trim();
   if (!search) {
     return;
   }
 
+  page = 1;
   list.innerHTML = '<div class="loader"></div></h1>';
 
   try {
     const result = await searchPhotos(search, page);
     list.innerHTML = createMarkup(result.hits);
     loadBtn.classList.add('visible');
+    checkLoadMoreButton(result.totalHits);
     initializeLightbox();
   } catch (error) {
-    console.log(error);
+    iziToast.error({
+      message: `Error: ${error.message}`,
+      position: 'bottomRight',
+    });
     list.innerHTML = '<h1>Something went wrong. Please try again.</h1>';
   }
 
@@ -91,8 +96,23 @@ async function handleLoad() {
       behavior: 'smooth',
     });
     lightbox.refresh();
+    checkLoadMoreButton(result.totalHits);
   } catch (error) {
-    console.log(error);
+    iziToast.error({
+      message: `Error: ${error.message}`,
+      position: 'bottomRight',
+    });
     list.innerHTML = '<h1>Something went wrong. Please try again.</h1>';
+  }
+}
+
+function checkLoadMoreButton(totalHits) {
+  const totalPages = Math.ceil(totalHits / 15);
+  if (page >= totalPages) {
+    loadBtn.classList.remove('visible');
+    iziToast.show({
+      message: "We're sorry, but you've reached the end of search results.",
+      position: 'bottomRight',
+    });
   }
 }
